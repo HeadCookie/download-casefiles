@@ -1,0 +1,19 @@
+{
+  "name": "download-casefiles",
+  "version": "1.0.0",
+  "description": "Download all of a user's Penneo casefiles to local storage via API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/app.js"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cli-progress": "^3.12.0",
+    "readline-sync": "^1.4.10",
+    "wsse": "^6.0.0"
+  }
+}
