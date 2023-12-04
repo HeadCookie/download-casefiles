@@ -45,15 +45,14 @@ export async function downloadDocument(documentId, savePath, apiBaseURL) {
   });
 }
 
-
-export async function fetchCaseFiles(apiBaseURL, page = 1, allCaseFiles = []) {
+export async function fetchCaseFiles(apiBaseURL, page, perPage = 100) {
   const { key, secret } = getCredentials();
   const headers = await generateHeaders(key, secret);
 
   return new Promise((resolve, reject) => {
     const options = {
       hostname: apiBaseURL,
-      path: `/api/v3/casefiles?per_page=100&page=${encodeURIComponent(page)}&ownedOnly=false`,
+      path: `/api/v3/casefiles?per_page=${encodeURIComponent(perPage)}&page=${encodeURIComponent(page)}&ownedOnly=false`,
       method: 'GET',
       headers: headers,
     };
@@ -76,13 +75,7 @@ export async function fetchCaseFiles(apiBaseURL, page = 1, allCaseFiles = []) {
             status
           }));
 
-          allCaseFiles.push(...caseFiles);
-
-          if (caseFiles.length === 100) {
-            resolve(fetchCaseFiles(apiBaseURL, page + 1, allCaseFiles));
-          } else {
-            resolve(allCaseFiles);
-          }
+          resolve(caseFiles);
         } catch (error) {
           console.error(`Error processing data on page ${page}:`, error);
           reject(error);
@@ -93,6 +86,39 @@ export async function fetchCaseFiles(apiBaseURL, page = 1, allCaseFiles = []) {
       reject(e);
     });
   });
+}
+
+export async function getTotalCaseFileCount(apiBaseURL) {
+  const { key, secret } = getCredentials();
+  const headers = await generateHeaders(key, secret);
+  const options = {
+    hostname: apiBaseURL,
+    path: encodeURI(`/api/v3/casefiles?per_page=1&page=1&ownedOnly=false`),
+    method: 'GET',
+    headers: headers,
+  };
+
+  try {
+    const itemCount = await new Promise((resolve, reject) => {
+      get(options, (res) => {
+        res.on('data', () => {
+        });
+        res.on('end', () => {
+          const count = parseInt(res.headers['x-penneo-item-count'], 10);
+          resolve(count);
+        });
+      }).on('error', (e) => {
+        reject(e);
+      });
+    });
+
+    console.log(`Total casefiles: ${itemCount}`);
+    return itemCount;
+  }
+  catch (error) {
+    console.error(`Error getting casefile count`, error);
+    throw error;
+  }
 }
 
 export async function generateHeaders(key, secret) {

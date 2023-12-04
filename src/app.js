@@ -1,9 +1,9 @@
 import { join } from 'path';
-import { fetchCaseFiles, generateHeaders } from './apiUtils.js';
-import { createDirectory, processCaseFiles } from './fileUtils.js';
+import { fetchCaseFiles, getTotalCaseFileCount } from './apiUtils.js';
+import { createDirectory, processCaseFiles, printClickableLink } from './fileUtils.js';
 import { selectEnvironment, selectDownloadDirectory, promptForCredentials } from './uiUtils.js';
-import { getCredentials } from './credentialsManager.js';
 import { caseFileStatuses } from './constants.js';
+import { SingleBar, Presets } from 'cli-progress';
 
 async function main() {
   const environment = selectEnvironment();
@@ -24,12 +24,30 @@ async function main() {
 
   try {
     await promptForCredentials();
-    const { key, secret } = getCredentials();
-    const headers = await generateHeaders(key, secret);
+    const totalCaseFilesCount = await getTotalCaseFileCount(apiBaseURL);
+    console.log(`Total casefiles: ${totalCaseFilesCount}`);
+    console.log('Fetching casefiles...');
+
+    const progressBar = new SingleBar({}, Presets.shades_classic);
+
+    progressBar.start(totalCaseFilesCount, 0);
+    let currentPage = 1;
+    const perPage = 100;
 
     try {
-      const caseFiles = await fetchCaseFiles(apiBaseURL, headers);
-      await processCaseFiles(caseFiles, apiBaseURL, downloadDirectory);
+      while (true) {
+        const caseFiles = await fetchCaseFiles(apiBaseURL, currentPage, perPage);
+        await processCaseFiles(caseFiles, apiBaseURL, downloadDirectory, progressBar);
+
+        if (caseFiles.length < perPage) {
+          break;
+        }
+        currentPage++;
+      }
+
+      progressBar.stop();
+      console.log('Done!');
+      printClickableLink(downloadDirectory);
     } catch (error) {
       console.error('Error fetching casefiles:', error);
     }
