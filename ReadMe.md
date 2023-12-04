@@ -2,10 +2,10 @@
 
 ## Overview
 Downloads Penneo casefiles to local storage via API. 
-You must have a Penneo account with API access to use this app. See the Penneo help center for more information.
+You must have a Penneo account with API access to use this app. [See the Penneo help center for more information](https://penneo.my.site.com/support/s/article/How-to-activate-find-and-create-API-keys?language=en_US).
 
 ## Requirements
-- Node
+- Node 20+
 - NPM
 - Penneo account with API access
 
@@ -16,6 +16,7 @@ You must have a Penneo account with API access to use this app. See the Penneo h
 ## Usage
 - Execute `npm start`.
 - Follow CLI prompts.
+
 ```bash
 download-casefiles on  main [?] is  v1.0.0 via  v20.9.0 
 ❯ npm start
